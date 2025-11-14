@@ -43,9 +43,9 @@ print(mainBundle.resourcePath ?? "no resource path")
 print(mainBundle.sharedFrameworksPath ?? "no frameworks path")
 print(mainBundle.privateFrameworksPath ?? "no frameworks path")
 
-if let sharedURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "com.github.kfix.MacPin") {
+if FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "com.github.kfix.MacPin") != nil {
 	// https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_application-groups
-	// print("\(sharedURL)") // could load self-modified, user customized, main.js's from here
+	// could load self-modified, user customized, main.js's from here
 }
 	
 if !loadMPframework(fromBundle: mainBundle) {
@@ -53,11 +53,11 @@ if !loadMPframework(fromBundle: mainBundle) {
 	// https://github.com/chromium/chromium/blob/master/chrome/app_shim/chrome_main_app_mode_mac.mm
 	// https://github.com/chromium/chromium/blob/master/chrome/browser/apps/app_shim/app_shim_host_manager_mac.mm
 
-	if let MPappPath = NSWorkspace.shared.absolutePathForApplication(withBundleIdentifier: "com.github.kfix.MacPin.MacPin"),
-	let MPappBundle = Bundle(path: MPappPath), loadMPframework(fromBundle: MPappBundle) {
+	if let MPappURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.github.kfix.MacPin.MacPin"),
+	let MPappBundle = Bundle(url: MPappURL), loadMPframework(fromBundle: MPappBundle) {
 		// Chromium Web Apps just use dlopen: https://github.com/chromium/chromium/blob/master/chrome/app_shim/app_mode_loader_mac.mm#L139
 		// and parses info.plists itself: https://github.com/chromium/chromium/blob/master/chrome/common/mac/app_mode_chrome_locator.mm
-		print("loaded \(MPappPath)!!")
+		print("loaded \(MPappURL.path)!!")
 	} else {
 		warn("Could not find & load MacPin.framework locally or from [com.github.kfix.MacPin.MacPin].app")
 	}

@@ -94,7 +94,9 @@ let appIconsetOpts = IconOptions(
     scales: [1, 2, 3]
 )
 
-var imagesetOpts = IconOptions(
+// Changed to nonisolated(unsafe) to maintain mutability while satisfying Swift 6 concurrency
+// This is safe because iconify is a single-threaded CLI tool
+nonisolated(unsafe) var imagesetOpts = IconOptions(
     idiom: .universal,
     scaleUp: false,
     basename: "image", //doesn't matter

@@ -1,11 +1,11 @@
-// swift-tools-version:5.4
+// swift-tools-version:5.10
 import PackageDescription
 import Foundation
 let package = Package(
     name: "MacPin",
-    //platforms: [.macOS(.v10_15)],
-    // whines about a lot of unguarded calls to 10.15.4 apis
-    platforms: [.macOS(.v11)],
+    // Updated for WebKitForge modernization - targeting macOS 14 (Sonoma) for modern APIs
+    // Using Swift 5.10 for stability - Swift 6.0 strict concurrency will be adopted in Phase 1.5
+    platforms: [.macOS(.v14)],
     products: [
         .library(name: "MacPin", type: .dynamic, targets: ["MacPin"]),
         .executable(name: "MacPin_static", targets: ["MacPin_static"]),

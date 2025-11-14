@@ -11,7 +11,7 @@
 
 #if os(iOS)
 // WebKitError* not defined in iOS. Bizarre.
-let WebKitErrorDomain = "WebKitErrorDomain"
+// Using WKError for modern iOS
 #endif
 
 import WebKit
@@ -72,6 +72,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 #endif
 	}
 
+	@objc(webView:decidePolicyForNavigationAction:decisionHandler:)
 	func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
 		//navigationAction ._originalURL ._userInitiated ._canHandleRequest 13+:._isRedirect 11+:._shouldOpenExternalSchemes 11+:._shouldOpenAppLinks
 		if let url = navigationAction.request.url, let scheme = url.scheme {
@@ -239,7 +240,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 				case(NSPOSIXErrorDomain, 1): // Operation not permitted
 					warn("Sandboxed?")
 					//fallthrough
-				case(WebKitErrorDomain, kWKErrorCodeFrameLoadInterruptedByPolicyChange): //`Frame load interrupted` WebKitErrorFrameLoadInterruptedByPolicyChange
+				case(WKError.errorDomain, kWKErrorCodeFrameLoadInterruptedByPolicyChange): //`Frame load interrupted` WebKitErrorFrameLoadInterruptedByPolicyChange
 					warn("Attachment received from an IFrame and was converted to a download? webView.loading == \(webView.isLoading)")
 					if let scheme = url.scheme, scheme == "about", let webview = webView as? MPWebView, let hint = URL(string: "about:downloading") {
 						webview.gotoURL(hint) // if webview is a stub _blank popup, then indicate its uselessness...
@@ -258,6 +259,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 		//content starts arriving...I assume <body> has materialized in the DOM?
 	}
 
+	@objc(webView:decidePolicyForNavigationResponse:decisionHandler:)
 	func webView(_ webView: WKWebView, decidePolicyFor navigationResponse: WKNavigationResponse, decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
 		let mime = navigationResponse.response.mimeType!
 		let url = navigationResponse.response.url!
@@ -324,7 +326,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 		// like server-issued error Statuses with no page content
 		if let url = webView.url {
 			warn("[\(url)] -> `\(error.localizedDescription)` [\(error._domain)] [\(error._code)]")
-			if error._domain == WebKitErrorDomain && error._code == kWKErrorCodePlugInWillHandleLoad {
+			if error._domain == WKError.errorDomain && error._code == kWKErrorCodePlugInWillHandleLoad {
 				warn("allowing plugin to handle \(url)")
 				// FIXME: get MIME somehow?? video/mp4 video/m3u8
 				// FIXME: can't catch & handle AVFoundation plugin's errors
@@ -332,7 +334,7 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 				//  [2017-02-22 19:55:57 +0000] <modules/MacPin/WebViewController.swift:78:126> [_webView(_:logDiagnosticMessageWithValue:description:value:)] engineFailedToLoad || AVFoundation == 0
 				// GOOD: [2017-02-22 19:57:55 +0000] <modules/MacPin/WebViewController.swift:76:102> [_webView(_:logDiagnosticMessage:description:)] mediaLoaded || AVFoundation
 			}
-			if error._domain == WebKitErrorDomain && error._code == kWKErrorCodeFrameLoadInterruptedByPolicyChange { warn("IFrame converted to download?") }
+			if error._domain == WKError.errorDomain && error._code == kWKErrorCodeFrameLoadInterruptedByPolicyChange { warn("IFrame converted to download?") }
 			if error._domain == NSURLErrorDomain && error._code != NSURLErrorCancelled { // dont catch on stopLoading() and HTTP redirects
 				// needs to be async
 				displayError(error as NSError, self)
@@ -394,8 +396,8 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 		}
 #endif
 		//if !tgt.description.isEmpty { evalJS("window.name = '\(tgt)';") }
-		if let url = openurl, let scheme = url.scheme, url.scheme != "about" { wv.gotoURL(url) } // decideWindowOpen has allowed us to get this far, so start the load now
-		if !browsingReactor.anyHandled(.didWindowOpenForURL, openurl?.absoluteString ?? "", wv, webView) { popup(wv) }
+		if let url = openurl, url.scheme != "about" { wv.gotoURL(url) } // decideWindowOpen has allowed us to get this far, so start the load now
+		if !browsingReactor.anyHandled(.didWindowOpenForURL, openurl?.absoluteString ?? "", wv, webView) { _ = popup(wv) }
 		return wv // window.open() -> Window()
 		//return nil //window.open() -> undefined
 	}
