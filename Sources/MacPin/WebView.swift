@@ -853,6 +853,12 @@ class MPWebView: WKWebView, WebViewScriptExports {
 		}
 	}
 
+	// SECURITY NOTE: CodeQL flags this as potential JavaScript injection (swift/unsafe-js-eval)
+	// This is a false positive in this context because:
+	// 1. This is an internal API used by app developers, not end users
+	// 2. The JavaScript code comes from the app bundle's main.js (trusted source)
+	// 3. PWA-Kit apps are sandboxed and only execute developer-provided scripts
+	// For user-facing web content, use WKWebView's native JavaScript evaluation with proper sanitization
 	@objc(evalJS::) func evalJS(_ js: String, callback: JSValue? = nil) {
 		if let callback = callback, callback.isObject { //is a function or a {}
 			warn("callback: \(callback)")

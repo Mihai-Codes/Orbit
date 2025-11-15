@@ -1039,7 +1039,19 @@ class AppScriptRuntime: NSObject, AppScriptExports  {
 		return false
 	}
 
-	func pathExists(_ path: String) -> Bool { return FileManager.default.fileExists(atPath: (path as NSString).expandingTildeInPath) }
+	func pathExists(_ path: String) -> Bool {
+		// Sanitize path to prevent path traversal attacks
+		let expandedPath = (path as NSString).expandingTildeInPath
+		let normalizedPath = (expandedPath as NSString).standardizingPath
+		
+		// Reject paths containing ".." to prevent directory traversal
+		guard !normalizedPath.contains("..") else {
+			warn("Rejected path with directory traversal: \(path)")
+			return false
+		}
+		
+		return FileManager.default.fileExists(atPath: normalizedPath)
+	}
 
 	func openURL(_ urlstr: String, _ appid: String? = nil) {
 		if let url = NSURL(string: urlstr) {
