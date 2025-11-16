@@ -104,30 +104,40 @@ Research shows PWYW generates 2-4x more revenue than fixed pricing:
 
 ---
 
-### 3. Gumroad Digital Products
+### 3. Gumroad Product - PWAKitBuilder App
 **Platform**: Gumroad (10% + 3.5% fees)
-**Target**: Developers learning PWA development
+**Product**: PWAKitBuilder.app - macOS GUI Application
 
-**Products**:
-1. **"PWA-Kit Mastery Course"** ($49-99)
-   - Video tutorials (10-15 videos)
-   - Advanced workflows
-   - Real-world examples (Gmail, Slack, Twitter PWAs)
-   - Lifetime updates
-   
-2. **"Premium PWA Templates"** ($19-29)
-   - 20+ pre-configured templates
-   - Custom icons and configs
-   - One-click deployment scripts
-   - Template: Gmail, Slack, Twitter, Discord, Linear, Notion
-   
-3. **"PWA-Kit Business Guide"** ($29 ebook)
-   - How to monetize PWAs
-   - White-labeling strategies
-   - Enterprise deployment
-   - Case studies
+**What is PWAKitBuilder**:
+- Beautiful SwiftUI desktop application for creating PWAs
+- Visual drag-and-drop interface (no command line needed)
+- Automatic favicon fetching and icon generation
+- Template library (Gmail, Slack, Twitter, Discord, etc.)
+- Live PWA preview before creation
+- One-click "Create App" button
+- **THIS IS WHAT YOU SELL** - an actual Mac app, not courses
 
-**Projected Revenue**: $200-600/month
+**Why it's legal to sell**:
+- PWAKitBuilder is a NEW proprietary SwiftUI app
+- NOT a fork of PWA-Kit (separate codebase)
+- Uses PWA-Kit CLI "under the hood" as a tool
+- Like how Tower (paid GUI) uses Git CLI (free)
+- Completely legal to sell closed-source GUI app
+
+**Pricing**: Pay-What-You-Want (PWYW)
+- **Suggested**: $29
+- **Minimum**: $0 (try free)
+- **Average expected**: ~$18-22 per sale
+
+**Revenue Projection**:
+- Year 1: 200-300 sales × $20 avg = $4,000-6,000
+- Year 2: 500-800 sales × $22 avg = $11,000-17,600
+
+**NOT selling on Gumroad**:
+- ❌ Courses (low margin, high effort)
+- ❌ Templates (just include free in the app)
+- ❌ Ebooks (not our strength)
+- ✅ ONLY the GUI application itself
 
 ---
 
