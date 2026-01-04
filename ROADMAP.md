@@ -23,6 +23,8 @@
 - Test infrastructure with 27 unit tests
 - AI Sidecar foundation (OllamaClient, PageContextExtractor, AISidebarView)
 - ollama-swift dependency integrated
+- AI Sidebar integration with NSSplitViewController
+- Keyboard shortcut (⌘⇧A) and toolbar button for sidebar toggle
 
 ---
 
@@ -52,17 +54,19 @@
 
 ---
 
-## Phase 2: Sidebar Integration (IN PROGRESS)
+## Phase 2: Sidebar Integration ✅ COMPLETE
 
 **Goal**: Integrate AI sidebar into the main browser window.
 
-### 2.1 NSSplitViewController Architecture 🔄 NEXT
-- [ ] Refactor main window to use NSSplitViewController
-- [ ] Add AI sidebar as collapsible split view item
-- [ ] Implement toggle animation (⌘⇧A shortcut)
-- [ ] Wire webView attachment when tabs change
+### 2.1 NSSplitViewController Architecture ✅ DONE
+- [x] Create `AISplitViewController.swift` - split view controller
+- [x] Refactor main window to use NSSplitViewController
+- [x] Add AI sidebar as collapsible split view item (280-400px)
+- [x] Implement toggle animation (⌘⇧A shortcut)
+- [x] Add toolbar button for AI sidebar
+- [x] Wire webView attachment when tabs change
 
-### 2.2 WebView Connection
+### 2.2 WebView Connection 🔄 NEXT
 - [ ] Auto-refresh context on page navigation
 - [ ] Pass selected text to sidebar
 - [ ] Context menu integration: "Ask Orbit AI"
@@ -161,7 +165,7 @@
 | Phase | Focus | Status | Target Date |
 |-------|-------|--------|-------------|
 | 1 | AI Sidecar Foundation | ✅ COMPLETE | Jan 5, 2026 |
-| 2 | Sidebar Integration | 🔄 IN PROGRESS | Jan 19, 2026 |
+| 2 | Sidebar Integration | ✅ COMPLETE | Jan 5, 2026 |
 | 3 | Content Blocking Polish | ⏳ Pending | Feb 2, 2026 |
 | 4 | Network Isolation | ⏳ Pending | Feb 16, 2026 |
 | 5 | CSS/JS Injection | ⏳ Pending | Mar 2, 2026 |
@@ -196,9 +200,10 @@
 
 ```
 Sources/MacPinOSX/AI/
-├── OllamaClient.swift       # Ollama API wrapper (272 lines)
+├── OllamaClient.swift         # Ollama API wrapper (272 lines)
 ├── PageContextExtractor.swift # JS bridge for page content (166 lines)
-└── AISidebarView.swift       # SwiftUI chat interface (405 lines)
+├── AISidebarView.swift        # SwiftUI chat interface (405 lines)
+└── AISplitViewController.swift # NSSplitViewController integration (101 lines)
 ```
 
 ---

@@ -38,11 +38,16 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          .build
-          Package.resolved
-        key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
+          .build/checkouts
+          .build/repositories
+        key: ${{ runner.os }}-${{ matrix.os }}-spm-${{ hashFiles('**/Package.resolved', '**/Package.swift') }}
         restore-keys: |
-          ${{ runner.os }}-spm-
+          ${{ runner.os }}-${{ matrix.os }}-spm-
+    
+    - name: Clean Build Artifacts
+      run: |
+        # Clean compiled artifacts but keep downloaded dependencies
+        rm -rf .build/arm64-apple-macosx .build/debug .build/release .build/*.build .build/workspace-state.json 2>/dev/null || true
       
     - name: Build Debug
       run: |

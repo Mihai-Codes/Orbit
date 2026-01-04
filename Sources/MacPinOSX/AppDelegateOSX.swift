@@ -169,6 +169,7 @@ public class MacPinAppDelegateOSX: NSObject, MacPinAppDelegate {
 		winMenu.submenu = NSMenu()
 		winMenu.submenu?.title = "Window"
 		winMenu.submenu?.addItem(MenuItem("Enter URL", #selector(BrowserViewControllerOSX.revealOmniBox), "l", [.command]))
+		winMenu.submenu?.addItem(MenuItem("Toggle AI Sidebar", #selector(BrowserViewControllerOSX.toggleAISidebar(_:)), "a", [.command, .shift]))
 		winMenu.submenu?.addItem(MenuItem(nil, #selector(NSWindow.toggleFullScreen(_:))))
 		winMenu.submenu?.addItem(MenuItem(nil, #selector(NSWindow.toggleToolbarShown(_:))))
 		winMenu.submenu?.addItem(MenuItem("Toggle Titlebar", #selector(WindowController.toggleTitlebar)))

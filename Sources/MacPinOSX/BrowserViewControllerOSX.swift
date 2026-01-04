@@ -44,6 +44,7 @@ struct WeakThing<T: AnyObject> {
 		case Share			= "Share URL"
 		case Snapshot		= "Snapshot"
 		case Sidebar		= "Sidebar"
+		case AISidebar		= "AI Assistant"
 		case NewTab			= "Open New Tab"
 		case CloseTab		= "Close Tab"
 		case SelectedTab	= "Selected Tab"
@@ -156,6 +157,7 @@ struct WeakThing<T: AnyObject> {
 		return [
 			NSToolbarItem.Identifier(rawValue: BrowserButtons.Share.rawValue),
 			NSToolbarItem.Identifier(rawValue: BrowserButtons.NewTab.rawValue),
+			NSToolbarItem.Identifier(rawValue: BrowserButtons.AISidebar.rawValue),
 			//NSToolbarItem.Identifier(rawValue: BrowserButtons.Snapshot.rawValue),
 			//NSToolbarItem.Identifier(rawValue: BrowserButtons.Sidebar.rawValue)
 		] + tabs + [
@@ -199,6 +201,15 @@ struct WeakThing<T: AnyObject> {
 					} else {
 						return nil
 					}
+
+				case .AISidebar:
+					if #available(macOS 11.0, *) {
+						btn.image = NSImage(systemSymbolName: "brain.head.profile", accessibilityDescription: "AI Assistant")
+					} else {
+						btn.image = NSImage(named: NSImage.smartBadgeTemplateName)
+					}
+					btn.action = #selector(BrowserViewControllerOSX.toggleAISidebar(_:))
+					return ti
 
 				case .Snapshot:
 					if #available(macOS 10.13, iOS 10, *) {
@@ -373,10 +384,18 @@ extension TabViewController: NSViewControllerPresentationAnimator {
 
 class BrowserViewControllerOSX: TabViewController, BrowserViewController {
 	lazy var windowController: WindowController = { return makeWindow() }()
+	
+	/// The split view controller managing the main content and AI sidebar
+	private(set) var splitViewController: AISplitViewController?
 
 	func makeWindow() -> WindowController {
-		var effectController = EffectViewController()
-		let win = BrowserWindow(contentViewController: effectController)
+		let effectController = EffectViewController()
+		
+		// Create split view controller with effect controller as main content
+		let splitVC = AISplitViewController(mainContentController: effectController)
+		self.splitViewController = splitVC
+		
+		let win = BrowserWindow(contentViewController: splitVC)
 		//win.setContentBorderThickness(24.0, for: .minY) // fake bottom toolbar
 
 		let wc = WindowController(window: win)
@@ -385,6 +404,16 @@ class BrowserViewControllerOSX: TabViewController, BrowserViewController {
 		effectController.view.addSubview(self.view)
 		self.view.frame = effectController.view.bounds
 		return wc
+	}
+	
+	/// Toggle the AI sidebar visibility
+	@objc func toggleAISidebar(_ sender: Any?) {
+		splitViewController?.toggleAISidebar(sender)
+	}
+	
+	/// Whether the AI sidebar is currently visible
+	var isAISidebarVisible: Bool {
+		return splitViewController?.isAISidebarVisible ?? false
 	}
 
 	@discardableResult
@@ -694,6 +723,9 @@ class BrowserViewControllerOSX: TabViewController, BrowserViewController {
 		}
 
 		omnibox.webview = webview
+		
+		// Attach webview to AI sidebar for context extraction
+		splitViewController?.attachWebView(webview)
 
 		if let window = view.window {
 			window.initialFirstResponder = omnibox.view
