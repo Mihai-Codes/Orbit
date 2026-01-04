@@ -177,6 +177,8 @@
 
 ## Recent Commits
 
+- `aa02e37` - fix: pin swift-argument-parser to 1.5.0 for Swift 5.10 compatibility
+- `ac97990` - feat: integrate AI sidebar with NSSplitViewController
 - `6ed439c` - feat: add AI Sidecar foundation with Ollama integration
 - `2b4dc0d` - feat: add test infrastructure with 27 unit tests
 - `beb07b8` - chore: release v0.2.0 - Orbit rebrand release

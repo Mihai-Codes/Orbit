@@ -118,24 +118,38 @@ orbit inject Gmail --css ~/styles/gmail-dark.css
 
 ## Project Status
 
-**Current Phase: Modernization & Pivot**
+**Current Version: 0.2.0** (January 2026)
 
+### ✅ Completed
 - [x] Swift 5.10 + macOS 14 support
-- [x] WebKit API modernization
-- [x] CI/CD infrastructure (CodeQL, Swift Build)
-- [ ] AI Sidecar implementation
+- [x] WebKit API modernization  
+- [x] CI/CD infrastructure (CodeQL, Swift Build, Code Coverage)
+- [x] Test infrastructure (27 unit tests passing)
+- [x] **AI Sidecar foundation** - OllamaClient, PageContextExtractor, AISidebarView
+- [x] **AI Sidebar integration** - NSSplitViewController, toggle (⌘⇧A), toolbar button
+- [x] Content blocking system (WKContentRuleList)
+
+### 🔄 In Progress
+- [ ] WebView connection for AI (auto-refresh context, text selection)
+- [ ] Context menu: "Ask Orbit AI"
+- [ ] Settings persistence
+
+### ⏳ Planned
 - [ ] Network tunneling features
 - [ ] Script injection system
+- [ ] Documentation site
 
-**Target v1.0**: Q3 2026
+**Target v1.0**: March 2026
 
-See [PIVOT_STRATEGY.md](PIVOT_STRATEGY.md) for the full roadmap.
+See [ROADMAP.md](ROADMAP.md) for the detailed development plan.
 
 ---
 
 ## Documentation
 
+- [Development Roadmap](ROADMAP.md) - Current status and phase breakdown
 - [Pivot Strategy](PIVOT_STRATEGY.md) - Why Orbit, technical vision
+- [DeepWiki Documentation](https://deepwiki.com/chindris-mihai-alexandru/Orbit) - Auto-generated architecture docs
 - [Getting Started](docs/getting-started.md)
 - [AI Configuration](docs/ai-config.md)
 - [Network Setup](docs/network.md)
