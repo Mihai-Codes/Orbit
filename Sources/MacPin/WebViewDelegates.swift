@@ -18,6 +18,20 @@ import WebKit
 import WebKitPrivates
 import UTIKit
 
+// MARK: - Orbit AI Integration Notifications
+
+public extension Notification.Name {
+	/// Posted when a WKWebView completes navigation (page load finished)
+	/// Object: the WKWebView that finished loading
+	/// UserInfo: ["url": URL?, "title": String?]
+	static let webViewDidFinishNavigation = Notification.Name("com.orbit.webViewDidFinishNavigation")
+	
+	/// Posted when a WKWebView starts provisional navigation
+	/// Object: the WKWebView that started loading
+	/// UserInfo: ["url": URL?]
+	static let webViewDidStartNavigation = Notification.Name("com.orbit.webViewDidStartNavigation")
+}
+
 extension AppScriptRuntime: WKScriptMessageHandler {
 
 	// TODO proper main<->renderer IPC needed .... https://electronjs.org/docs/api/ipc-main
@@ -71,6 +85,13 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 #if os(iOS)
 		UIApplication.shared.isNetworkActivityIndicatorVisible = true // use webview._networkRequestsInProgress ??
 #endif
+		
+		// Notify AI sidebar that navigation started
+		NotificationCenter.default.post(
+			name: .webViewDidStartNavigation,
+			object: webView,
+			userInfo: ["url": webView.url as Any]
+		)
 	}
 
 	@objc(webView:decidePolicyForNavigationAction:decisionHandler:)
@@ -359,6 +380,16 @@ extension AppScriptRuntime: WKScriptMessageHandler {
 #if os(iOS)
 		UIApplication.shared.isNetworkActivityIndicatorVisible = false
 #endif
+		
+		// Notify AI sidebar that navigation completed (for context refresh)
+		NotificationCenter.default.post(
+			name: .webViewDidFinishNavigation,
+			object: webView,
+			userInfo: [
+				"url": webView.url as Any,
+				"title": webView.title as Any
+			]
+		)
 	}
 
 	// (webView:createWebViewWithConfiguration:forNavigationAction:windowFeatures:)

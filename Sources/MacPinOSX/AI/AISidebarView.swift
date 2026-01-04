@@ -6,6 +6,7 @@
 import SwiftUI
 import WebKit
 import Ollama
+import Combine
 
 // MARK: - Chat Message Model
 
@@ -46,18 +47,50 @@ public final class AISidebarViewModel: ObservableObject {
     @Published public var selectedModel: String = "llama3.2"
     @Published public var errorMessage: String?
     @Published public var currentContext: PageContext?
+    @Published public var isRefreshingContext: Bool = false
     
     // MARK: - Private Properties
     
     private let client: OllamaClient
     private weak var webView: WKWebView?
+    private var cancellables = Set<AnyCancellable>()
+    private var navigationObserver: Any?
     
     // MARK: - Initialization
     
     public init() {
         self.client = OllamaClient()
+        setupNavigationObserver()
         Task {
             await checkConnection()
+        }
+    }
+    
+    deinit {
+        if let observer = navigationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+    }
+    
+    // MARK: - Navigation Observer
+    
+    private func setupNavigationObserver() {
+        // Observe when webView finishes navigation to auto-refresh context
+        navigationObserver = NotificationCenter.default.addObserver(
+            forName: .webViewDidFinishNavigation,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                // Only refresh if this notification is for our attached webView
+                if let notificationWebView = notification.object as? WKWebView,
+                   notificationWebView === self.webView {
+                    await self.refreshContext()
+                }
+            }
         }
     }
     
@@ -88,6 +121,9 @@ public final class AISidebarViewModel: ObservableObject {
     
     public func refreshContext() async {
         guard let webView = webView else { return }
+        
+        isRefreshingContext = true
+        defer { isRefreshingContext = false }
         
         do {
             currentContext = try await PageContextExtractor.extractContext(from: webView)
@@ -238,39 +274,93 @@ public struct AISidebarView: SwiftUI.View {
     // MARK: - Subviews
     
     private var headerView: some SwiftUI.View {
-        HStack {
-            Image(systemName: "brain.head.profile")
-                .font(.title2)
-            
-            Text("AI Assistant")
-                .font(.headline)
-            
-            Spacer()
-            
-            // Connection status
-            Circle()
-                .fill(viewModel.isConnected ? Color.green : Color.red)
-                .frame(width: 8, height: 8)
-            
-            // Model selector
-            if !viewModel.availableModels.isEmpty {
-                Picker("", selection: $viewModel.selectedModel) {
-                    ForEach(viewModel.availableModels, id: \.self) { model in
-                        Text(model).tag(model)
+        VStack(spacing: 4) {
+            HStack {
+                Image(systemName: "brain.head.profile")
+                    .font(.title2)
+                
+                Text("AI Assistant")
+                    .font(.headline)
+                
+                Spacer()
+                
+                // Connection status
+                Circle()
+                    .fill(viewModel.isConnected ? Color.green : Color.red)
+                    .frame(width: 8, height: 8)
+                
+                // Model selector
+                if !viewModel.availableModels.isEmpty {
+                    Picker("", selection: $viewModel.selectedModel) {
+                        ForEach(viewModel.availableModels, id: \.self) { model in
+                            Text(model).tag(model)
+                        }
                     }
+                    .labelsHidden()
+                    .frame(maxWidth: 120)
                 }
-                .labelsHidden()
-                .frame(maxWidth: 120)
+                
+                Button(action: viewModel.clearChat) {
+                    Image(systemName: "trash")
+                }
+                .buttonStyle(.borderless)
+                .help("Clear chat")
             }
             
-            Button(action: viewModel.clearChat) {
-                Image(systemName: "trash")
-            }
-            .buttonStyle(.borderless)
-            .help("Clear chat")
+            // Context indicator
+            contextIndicatorView
         }
         .padding(.horizontal)
         .padding(.vertical, 8)
+    }
+    
+    private var contextIndicatorView: some SwiftUI.View {
+        HStack(spacing: 4) {
+            if viewModel.isRefreshingContext {
+                ProgressView()
+                    .controlSize(.mini)
+                Text("Loading page context...")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            } else if let context = viewModel.currentContext {
+                Image(systemName: "doc.text")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                if let title = context.title, !title.isEmpty {
+                    Text(title)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                } else if let url = context.url {
+                    Text(url.host ?? url.absoluteString)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    Task { await viewModel.refreshContext() }
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.caption2)
+                }
+                .buttonStyle(.borderless)
+                .help("Refresh page context")
+            } else {
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("No page context")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+        }
     }
     
     private var quickActionsView: some SwiftUI.View {
