@@ -1,11 +1,11 @@
 import Foundation
-import PWAKit
+import Orbit
 
 #if os(macOS)
 import AppKit
-let app = PWAKit.MacPinApp.shared
+let app = Orbit.MacPinApp.shared
 print("initializing MacPinAppDelegateOSX()")
-let appDel = PWAKit.MacPinAppDelegateOSX()
+let appDel = Orbit.MacPinAppDelegateOSX()
 app.delegate = appDel
 app.run()
 #elseif os(iOS)

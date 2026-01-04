@@ -1,6 +1,7 @@
 // swift-tools-version:5.10
 import PackageDescription
 import Foundation
+
 let package = Package(
     name: "Orbit",
     // Orbit: AI-augmented browser workspace for macOS
@@ -8,9 +9,9 @@ let package = Package(
     // Swift 6.0 strict concurrency will be adopted in Phase 1.5
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "Orbit", type: .dynamic, targets: ["PWAKit"]),
-        .executable(name: "Orbit_static", targets: ["PWAKit_static"]),
-        .executable(name: "Orbit_stub", targets: ["PWAKit_stub"]),
+        .library(name: "Orbit", type: .dynamic, targets: ["Orbit"]),
+        .executable(name: "Orbit_static", targets: ["Orbit_static"]),
+        .executable(name: "Orbit_stub", targets: ["Orbit_stub"]),
         .executable(name: "iconify", targets: ["iconify"]),
     ],
     dependencies: [
@@ -37,12 +38,14 @@ let package = Package(
         ),
     ]
 )
-if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmpty {
+
+if let iosvar = ProcessInfo.processInfo.environment["ORBIT_IOS"], !iosvar.isEmpty {
+    // iOS build configuration
     package.platforms = [.iOS(.v13)]
-    package.products = [ .executable(name: "PWAKit", targets: ["PWAKit"]) ]
+    package.products = [ .executable(name: "Orbit", targets: ["Orbit"]) ]
     package.targets.append(
         .executableTarget(
-            name: "PWAKit",
+            name: "Orbit",
             dependencies: [
                 "WebKitPrivates",
                 "JavaScriptCorePrivates",
@@ -55,6 +58,7 @@ if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmp
         )
     )
 } else {
+    // macOS build configuration
     package.targets.append(contentsOf: [
         .executableTarget(
             name: "iconify",
@@ -63,7 +67,8 @@ if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmp
             ],
             path: "Tools/iconify"
         ),
-        .target(name: "PWAKit",
+        .target(
+            name: "Orbit",
             dependencies: [
                 "WebKitPrivates",
                 "JavaScriptCorePrivates",
@@ -75,19 +80,27 @@ if let iosvar = ProcessInfo.processInfo.environment["PWAKIT_IOS"], !iosvar.isEmp
             path: "Sources/MacPinOSX"
         ),
         .executableTarget(
-            name: "PWAKit_static",
+            name: "Orbit_static",
             dependencies: [
-                .target(name: "PWAKit")
+                .target(name: "Orbit")
             ],
             path: "Sources/MacPin_static"
         ),
         .executableTarget(
-            name: "PWAKit_stub",
+            name: "Orbit_stub",
             dependencies: [],
             path: "Sources/MacPin_stub",
             linkerSettings: [
                 .unsafeFlags(["-Xlinker", "-rpath", "-Xlinker", "@loader_path:@loader_path/../Frameworks"])
             ]
-        )
+        ),
+        // Test target
+        .testTarget(
+            name: "OrbitTests",
+            dependencies: [
+                .target(name: "Orbit")
+            ],
+            path: "Tests/OrbitTests"
+        ),
     ])
 }
