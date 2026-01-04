@@ -2,15 +2,15 @@
 import PackageDescription
 import Foundation
 let package = Package(
-    name: "PWA-Kit",
-    // PWA-Kit: The macOS toolkit for progressive web apps
-    // Targeting macOS 14 (Sonoma) with Swift 5.10 for modern PWA support
+    name: "Orbit",
+    // Orbit: AI-augmented browser workspace for macOS
+    // Targeting macOS 14 (Sonoma) with Swift 5.10
     // Swift 6.0 strict concurrency will be adopted in Phase 1.5
     platforms: [.macOS(.v14)],
     products: [
-        .library(name: "PWAKit", type: .dynamic, targets: ["PWAKit"]),
-        .executable(name: "PWAKit_static", targets: ["PWAKit_static"]),
-        .executable(name: "PWAKit_stub", targets: ["PWAKit_stub"]),
+        .library(name: "Orbit", type: .dynamic, targets: ["PWAKit"]),
+        .executable(name: "Orbit_static", targets: ["PWAKit_static"]),
+        .executable(name: "Orbit_stub", targets: ["PWAKit_stub"]),
         .executable(name: "iconify", targets: ["iconify"]),
     ],
     dependencies: [
