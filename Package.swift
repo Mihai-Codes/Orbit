@@ -18,6 +18,8 @@ let package = Package(
         .package(path: "modules/Linenoise"),
         .package(path: "modules/UTIKit"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.0.0"),
+        // AI Sidecar: Ollama client for local LLM integration
+        .package(url: "https://github.com/mattt/ollama-swift", from: "1.0.0"),
     ],
     targets: [
         .systemLibrary(
@@ -76,6 +78,8 @@ if let iosvar = ProcessInfo.processInfo.environment["ORBIT_IOS"], !iosvar.isEmpt
                 "UserNotificationPrivates",
                 "Linenoise",
                 "UTIKit",
+                // AI Sidecar
+                .product(name: "Ollama", package: "ollama-swift"),
             ],
             path: "Sources/MacPinOSX"
         ),
