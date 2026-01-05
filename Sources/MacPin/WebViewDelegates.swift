@@ -30,6 +30,11 @@ public extension Notification.Name {
 	/// Object: the WKWebView that started loading
 	/// UserInfo: ["url": URL?]
 	static let webViewDidStartNavigation = Notification.Name("com.orbit.webViewDidStartNavigation")
+	
+	/// Posted when text selection changes in a WKWebView
+	/// Object: the WKWebView where selection changed
+	/// UserInfo: ["selectedText": String] - empty string if selection cleared
+	static let webViewSelectionDidChange = Notification.Name("com.orbit.webViewSelectionDidChange")
 }
 
 extension AppScriptRuntime: WKScriptMessageHandler {

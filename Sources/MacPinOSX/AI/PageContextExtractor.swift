@@ -82,6 +82,52 @@ public final class PageContextExtractor {
         })();
         """
     
+    /// JavaScript to install selection change listener
+    /// Posts message to OrbitSelectionChange handler when text selection changes
+    /// Uses debouncing to avoid excessive notifications
+    private static let installSelectionListenerJS = """
+        (function() {
+            // Avoid duplicate listeners
+            if (window._orbitSelectionListenerInstalled) {
+                return 'already_installed';
+            }
+            window._orbitSelectionListenerInstalled = true;
+            
+            var debounceTimer = null;
+            var lastSelection = '';
+            
+            document.addEventListener('selectionchange', function() {
+                // Debounce: wait 150ms after last change before notifying
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer);
+                }
+                
+                debounceTimer = setTimeout(function() {
+                    var selection = window.getSelection();
+                    var selectedText = '';
+                    if (selection && selection.rangeCount > 0) {
+                        selectedText = selection.toString().trim();
+                    }
+                    
+                    // Only notify if selection actually changed
+                    if (selectedText !== lastSelection) {
+                        lastSelection = selectedText;
+                        
+                        // Post to Swift via webkit message handler
+                        if (window.webkit && window.webkit.messageHandlers && 
+                            window.webkit.messageHandlers.OrbitSelectionChange) {
+                            window.webkit.messageHandlers.OrbitSelectionChange.postMessage({
+                                selectedText: selectedText
+                            });
+                        }
+                    }
+                }, 150);
+            });
+            
+            return 'installed';
+        })();
+        """
+    
     // MARK: - Extraction Methods
     
     /// Extract full page context for AI processing
@@ -152,6 +198,16 @@ public final class PageContextExtractor {
             pageContent: nil
         )
     }
+    
+    /// Install selection change listener on the webView
+    /// This sets up a JavaScript listener that posts messages when text selection changes
+    /// - Parameter webView: The WKWebView to monitor
+    /// - Returns: true if listener was installed, false if already installed
+    @discardableResult
+    public static func installSelectionListener(on webView: WKWebView) async throws -> Bool {
+        let result = try await webView.evaluateJavaScript(Self.installSelectionListenerJS)
+        return (result as? String) == "installed"
+    }
 }
 
 // MARK: - WKWebView Extension
@@ -170,5 +226,12 @@ extension WKWebView {
     @MainActor
     public func getSelectedText() async throws -> String? {
         return try await PageContextExtractor.extractSelectedText(from: self)
+    }
+    
+    /// Install selection change monitoring
+    /// Sets up a listener that posts notifications when text selection changes
+    @MainActor
+    public func installSelectionMonitoring() async throws {
+        try await PageContextExtractor.installSelectionListener(on: self)
     }
 }

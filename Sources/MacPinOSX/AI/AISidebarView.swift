@@ -48,6 +48,7 @@ public final class AISidebarViewModel: ObservableObject {
     @Published public var errorMessage: String?
     @Published public var currentContext: PageContext?
     @Published public var isRefreshingContext: Bool = false
+    @Published public var selectedText: String?
     
     // MARK: - Private Properties
     
@@ -55,12 +56,14 @@ public final class AISidebarViewModel: ObservableObject {
     private weak var webView: WKWebView?
     private var cancellables = Set<AnyCancellable>()
     private var navigationObserver: Any?
+    private var selectionObserver: Any?
     
     // MARK: - Initialization
     
     public init() {
         self.client = OllamaClient()
         setupNavigationObserver()
+        setupSelectionObserver()
         Task {
             await checkConnection()
         }
@@ -68,6 +71,9 @@ public final class AISidebarViewModel: ObservableObject {
     
     deinit {
         if let observer = navigationObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        if let observer = selectionObserver {
             NotificationCenter.default.removeObserver(observer)
         }
     }
@@ -89,9 +95,41 @@ public final class AISidebarViewModel: ObservableObject {
                 if let notificationWebView = notification.object as? WKWebView,
                    notificationWebView === self.webView {
                     await self.refreshContext()
+                    // Install selection monitoring after page loads
+                    await self.setupSelectionMonitoring()
                 }
             }
         }
+    }
+    
+    // MARK: - Selection Observer
+    
+    private func setupSelectionObserver() {
+        // Observe when text selection changes in webView
+        selectionObserver = NotificationCenter.default.addObserver(
+            forName: .webViewSelectionDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard let self = self else { return }
+            
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                // Only handle if this notification is for our attached webView
+                if let notificationWebView = notification.object as? WKWebView,
+                   notificationWebView === self.webView {
+                    if let userInfo = notification.userInfo,
+                       let text = userInfo["selectedText"] as? String {
+                        self.selectedText = text.isEmpty ? nil : text
+                    }
+                }
+            }
+        }
+    }
+    
+    private func setupSelectionMonitoring() async {
+        guard let webView = webView else { return }
+        await webView.setupSelectionMonitoring()
     }
     
     // MARK: - Connection Management
@@ -199,11 +237,19 @@ public final class AISidebarViewModel: ObservableObject {
     }
     
     public func explainSelection() async {
+        // Use cached selectedText if available, otherwise fetch it
+        if let text = selectedText, !text.isEmpty {
+            inputText = "Please explain: \"\(text)\""
+            await sendMessage()
+            return
+        }
+        
+        // Fallback to fetching selected text directly
         guard let webView = webView else { return }
         
         do {
-            if let selectedText = try await PageContextExtractor.extractSelectedText(from: webView) {
-                inputText = "Please explain: \"\(selectedText)\""
+            if let fetchedText = try await PageContextExtractor.extractSelectedText(from: webView) {
+                inputText = "Please explain: \"\(fetchedText)\""
                 await sendMessage()
             } else {
                 errorMessage = "No text selected"
@@ -211,6 +257,21 @@ public final class AISidebarViewModel: ObservableObject {
         } catch {
             errorMessage = "Failed to get selected text: \(error.localizedDescription)"
         }
+    }
+    
+    /// Ask AI about the currently selected text with a custom prompt
+    public func askAboutSelection(prompt: String? = nil) async {
+        guard let text = selectedText, !text.isEmpty else {
+            errorMessage = "No text selected"
+            return
+        }
+        
+        if let customPrompt = prompt {
+            inputText = "\(customPrompt): \"\(text)\""
+        } else {
+            inputText = "Regarding this text: \"\(text)\""
+        }
+        await sendMessage()
     }
 }
 
@@ -315,50 +376,66 @@ public struct AISidebarView: SwiftUI.View {
     }
     
     private var contextIndicatorView: some SwiftUI.View {
-        HStack(spacing: 4) {
-            if viewModel.isRefreshingContext {
-                ProgressView()
-                    .controlSize(.mini)
-                Text("Loading page context...")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            } else if let context = viewModel.currentContext {
-                Image(systemName: "doc.text")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                if let title = context.title, !title.isEmpty {
-                    Text(title)
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                if viewModel.isRefreshingContext {
+                    ProgressView()
+                        .controlSize(.mini)
+                    Text("Loading page context...")
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                } else if let context = viewModel.currentContext {
+                    Image(systemName: "doc.text")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    if let title = context.title, !title.isEmpty {
+                        Text(title)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    } else if let url = context.url {
+                        Text(url.host ?? url.absoluteString)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        Task { await viewModel.refreshContext() }
+                    }) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.caption2)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Refresh page context")
+                } else {
+                    Image(systemName: "doc.text.magnifyingglass")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text("No page context")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Spacer()
+                }
+            }
+            
+            // Selected text indicator
+            if let selectedText = viewModel.selectedText, !selectedText.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "text.cursor")
+                        .font(.caption2)
+                        .foregroundColor(.accentColor)
+                    Text("Selected: \"\(selectedText.prefix(50))\(selectedText.count > 50 ? "..." : "")\"")
+                        .font(.caption2)
+                        .foregroundColor(.accentColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
-                } else if let url = context.url {
-                    Text(url.host ?? url.absoluteString)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
                 }
-                
-                Spacer()
-                
-                Button(action: {
-                    Task { await viewModel.refreshContext() }
-                }) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.caption2)
-                }
-                .buttonStyle(.borderless)
-                .help("Refresh page context")
-            } else {
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text("No page context")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Spacer()
             }
         }
     }
@@ -371,11 +448,22 @@ public struct AISidebarView: SwiftUI.View {
             .buttonStyle(.bordered)
             .controlSize(.small)
             
-            Button("Explain Selection") {
+            // Explain Selection button - highlighted when text is selected
+            Button {
                 Task { await viewModel.explainSelection() }
+            } label: {
+                HStack(spacing: 4) {
+                    if viewModel.selectedText != nil {
+                        Image(systemName: "text.cursor")
+                            .font(.caption)
+                    }
+                    Text("Explain Selection")
+                }
             }
             .buttonStyle(.bordered)
             .controlSize(.small)
+            .tint(viewModel.selectedText != nil ? .accentColor : nil)
+            .disabled(viewModel.selectedText == nil)
             
             Spacer()
         }
