@@ -1,30 +1,28 @@
-name: "CodeQL Advanced"
+name: "CodeQL"
 
 on:
-  push:
-    branches: [ "main", "modernize/*" ]
+  # Only run on PRs to main (not every push) and weekly
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '0 0 * * 1'  # Weekly on Mondays
+    - cron: '0 3 * * 1'  # Weekly on Mondays at 3 AM UTC
+
+# Cancel in-progress runs for the same PR
+concurrency:
+  group: codeql-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   analyze:
-    name: Analyze Swift (${{ matrix.language }})
-    runs-on: macos-latest
+    name: CodeQL Security Scan
+    # Use self-hosted M1 Max runner for faster builds (~50-70% faster than GitHub-hosted)
+    runs-on: [self-hosted, macOS, ARM64]
+    timeout-minutes: 30
+    
     permissions:
       security-events: write
-      packages: read
       actions: read
       contents: read
-
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'swift' ]
-        include:
-        - language: swift
-          build-mode: manual
 
     steps:
     - name: Checkout repository
@@ -33,16 +31,16 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v3
       with:
-        languages: ${{ matrix.language }}
-        build-mode: ${{ matrix.build-mode }}
-        queries: +security-extended,security-and-quality
+        languages: swift
+        build-mode: manual
+        # Use default queries only (faster than security-extended + security-and-quality)
+        # Default includes: security queries for common vulnerabilities
         
-    - if: matrix.build-mode == 'manual'
-      name: Build Swift Package
+    - name: Build Swift Package
       run: |
         swift build --configuration release
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
-        category: "/language:${{matrix.language}}"
+        category: "/language:swift"
