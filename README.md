@@ -221,6 +221,14 @@ This project is a modernization and pivot of [MacPin](https://github.com/kfix/Ma
 
 ---
 
+## Support the Project
+
+If Orbit helps you, consider supporting its development:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mihai_chindris)
+
+---
+
 ## Contact
 
 - **GitHub Issues**: [Report bugs](https://github.com/chindris-mihai-alexandru/Orbit/issues)
