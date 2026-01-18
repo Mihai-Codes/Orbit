@@ -9,7 +9,7 @@
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://www.apple.com/macos/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
-[![Build](https://github.com/Mihai-Codes/Orbit/actions/workflows/swift-build.yml/badge.svg)](https://github.com/Mihai-Codes/Orbit/actions/workflows/swift-build.yml)
+[![Build](https://github.com/Mihai-Codes/Orbit/actions/workflows/ci-self-hosted.yml/badge.svg)](https://github.com/Mihai-Codes/Orbit/actions/workflows/ci-self-hosted.yml)
 [![codecov](https://codecov.io/gh/Mihai-Codes/Orbit/graph/badge.svg)](https://codecov.io/gh/Mihai-Codes/Orbit)
 [![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/Mihai-Codes/Orbit/releases)
 
