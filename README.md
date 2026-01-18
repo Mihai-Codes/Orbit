@@ -9,9 +9,9 @@
 [![Swift 5.10](https://img.shields.io/badge/Swift-5.10-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/platform-macOS%2014%2B-lightgrey.svg)](https://www.apple.com/macos/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
-[![Build](https://github.com/chindris-mihai-alexandru/Orbit/actions/workflows/swift-build.yml/badge.svg)](https://github.com/chindris-mihai-alexandru/Orbit/actions/workflows/swift-build.yml)
-[![codecov](https://codecov.io/gh/chindris-mihai-alexandru/Orbit/graph/badge.svg)](https://codecov.io/gh/chindris-mihai-alexandru/Orbit)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/chindris-mihai-alexandru/Orbit/releases)
+[![Build](https://github.com/Mihai-Codes/Orbit/actions/workflows/swift-build.yml/badge.svg)](https://github.com/Mihai-Codes/Orbit/actions/workflows/swift-build.yml)
+[![codecov](https://codecov.io/gh/Mihai-Codes/Orbit/graph/badge.svg)](https://codecov.io/gh/Mihai-Codes/Orbit)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://github.com/Mihai-Codes/Orbit/releases)
 
 </center>
 
@@ -80,7 +80,7 @@ Scripts sync across your Macs via iCloud.
 ### Build from Source
 
 ```bash
-git clone https://github.com/chindris-mihai-alexandru/Orbit.git
+git clone https://github.com/Mihai-Codes/Orbit.git
 cd Orbit
 swift build --configuration release
 ```
@@ -120,21 +120,21 @@ orbit inject Gmail --css ~/styles/gmail-dark.css
 
 **Current Version: 0.2.0** (January 2026)
 
-### ✅ Completed
+### Completed
 - [x] Swift 5.10 + macOS 14 support
 - [x] WebKit API modernization  
 - [x] CI/CD infrastructure (CodeQL, Swift Build, Code Coverage)
 - [x] Test infrastructure (27 unit tests passing)
 - [x] **AI Sidecar foundation** - OllamaClient, PageContextExtractor, AISidebarView
-- [x] **AI Sidebar integration** - NSSplitViewController, toggle (⌘⇧A), toolbar button
+- [x] **AI Sidebar integration** - NSSplitViewController, toggle (Cmd+Shift+A), toolbar button
 - [x] Content blocking system (WKContentRuleList)
 
-### 🔄 In Progress
+### In Progress
 - [ ] WebView connection for AI (auto-refresh context, text selection)
 - [ ] Context menu: "Ask Orbit AI"
 - [ ] Settings persistence
 
-### ⏳ Planned
+### Planned
 - [ ] Network tunneling features
 - [ ] Script injection system
 - [ ] Documentation site
@@ -149,7 +149,7 @@ See [ROADMAP.md](ROADMAP.md) for the detailed development plan.
 
 - [Development Roadmap](ROADMAP.md) - Current status and phase breakdown
 - [Pivot Strategy](PIVOT_STRATEGY.md) - Why Orbit, technical vision
-- [DeepWiki Documentation](https://deepwiki.com/chindris-mihai-alexandru/Orbit) - Auto-generated architecture docs
+- [DeepWiki Documentation](https://deepwiki.com/Mihai-Codes/Orbit) - Auto-generated architecture docs
 - [Getting Started](docs/getting-started.md)
 - [AI Configuration](docs/ai-config.md)
 - [Network Setup](docs/network.md)
@@ -231,7 +231,7 @@ If Orbit helps you, consider supporting its development:
 
 ## Contact
 
-- **GitHub Issues**: [Report bugs](https://github.com/chindris-mihai-alexandru/Orbit/issues)
+- **GitHub Issues**: [Report bugs](https://github.com/Mihai-Codes/Orbit/issues)
 - **Security**: chindris.mihai.alexandru@gmail.com
 
 ---
@@ -240,6 +240,6 @@ If Orbit helps you, consider supporting its development:
 
 **Built with Swift, WebKit, and Local AI**
 
-[Star us on GitHub](https://github.com/chindris-mihai-alexandru/Orbit) | [Read the Strategy](PIVOT_STRATEGY.md)
+[Star us on GitHub](https://github.com/Mihai-Codes/Orbit) | [Read the Strategy](PIVOT_STRATEGY.md)
 
 </center>
