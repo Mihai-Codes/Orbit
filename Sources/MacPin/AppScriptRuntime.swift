@@ -1045,8 +1045,16 @@ class AppScriptRuntime: NSObject, AppScriptExports  {
 		let normalizedPath = (expandedPath as NSString).standardizingPath
 		
 		// Reject paths containing ".." to prevent directory traversal
-		guard !normalizedPath.contains("..") else {
-			warn("Rejected path with directory traversal: \(path)")
+		// Also check if it's absolute or relative to allowed locations if needed, 
+        // but standardizingPath resolves ".." so we check if the resolved path is safe.
+        // For now, we rely on standardizingPath and checking for ".." remaining or 
+        // if the user intended to go up. 
+        // A stricter check would be to ensure it starts with a safe root.
+        // However, based on the alert, we just need to ensure we don't blindly trust the input.
+        
+        // Simple check for traversal attempts that might bypass standardizingPath in some contexts
+		if path.contains("..") {
+			warn("Rejected path with potential directory traversal: \(path)")
 			return false
 		}
 		
