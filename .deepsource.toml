@@ -1,0 +1,20 @@
+version = 1
+
+[[analyzers]]
+name = "swift"
+enabled = true
+
+[[exclude_patterns]]
+pattern = ".build/**"
+
+[[exclude_patterns]]
+pattern = "build/**"
+
+[[exclude_patterns]]
+pattern = "target/**"
+
+[[exclude_patterns]]
+pattern = ".git/**"
+
+[[exclude_patterns]]
+pattern = "Package.resolved"
