@@ -18,3 +18,5 @@ pattern = ".git/**"
 
 [[exclude_patterns]]
 pattern = "Package.resolved"
+
+# Trigger DeepSource re-analysis
